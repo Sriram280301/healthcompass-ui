@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="login-container">
+        <h2>Healthcare Compass Login</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            </div>
+            <div class="form-group">
+                <button type="button" class="login-btn" id="loginButton">Login</button>
+            </div>
+            <div class="form-group">
+                <a href="forgot-password.html">Forgot your password?</a>
+            </div>
+            <div class="form-group">
+                <button type="button" class="register-btn" id="registerButton">Register</button>
+            </div>
+        </form>
+        <div id="error-message" class="error-message"></div>
+    </div>
+
+    <script>
+        // Validate login credentials
+        function validateLogin(event) {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === "user" && password === "pass") {
+                window.location.href = "dashboard.html";
+            } else {
+                alert("Invalid credentials. Try again!");
+            }
+        }
+
+        // Redirect to registration page
+        function redirectToRegister() {
+            window.location.href = "register.html";
+        }
+
+        // Attach event listeners
+        document.getElementById('loginButton').addEventListener('click', validateLogin);
+        document.getElementById('registerButton').addEventListener('click', redirectToRegister);
+    </script>
+</body>
+</html>

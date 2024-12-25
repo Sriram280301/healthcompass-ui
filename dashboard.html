@@ -33,7 +33,7 @@
             </div>
         </section>
 
-        <div id="chatContainer" class="chat-container hidden">
+        <div id="chatContainer" class="chat-container">
             <div class="chat-header">
                 <h3><i class="fas fa-robot"></i> HealthBot</h3>
                 <button id="closeChat" class="close-button"><i class="fas fa-times"></i></button>
@@ -82,4 +82,64 @@
 
     <script type="module" src="/src/js/main.js"></script>
 </body>
+<script>
+    const chatMessages = document.getElementById("chatMessages");
+    const userInput = document.getElementById("userInput");
+    const sendMessageButton = document.getElementById("sendMessage");
+
+    async function sendMessage() {
+        const userMessage = userInput.value.trim();
+        if (!userMessage) return;
+
+        // Display user message
+        const userMessageElement = document.createElement("div");
+        userMessageElement.className = "message user";
+        userMessageElement.textContent = userMessage;
+        chatMessages.appendChild(userMessageElement);
+        userInput.value = "";
+
+        // Scroll to the latest message
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Fetch bot response
+        try {
+            const response = await fetch("http://localhost:8000/chat/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ question: userMessage }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Error fetching response");
+            }
+
+            const data = await response.json();
+            const botMessage = data.response;
+
+            // Display bot message
+            const botMessageElement = document.createElement("div");
+            botMessageElement.className = "message bot";
+            botMessageElement.textContent = botMessage;
+            chatMessages.appendChild(botMessageElement);
+
+            // Scroll to the latest message
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } catch (error) {
+            console.error("Error:", error);
+            const errorMessageElement = document.createElement("div");
+            errorMessageElement.className = "message bot";
+            errorMessageElement.textContent = "Oops! Something went wrong. Please try again.";
+            chatMessages.appendChild(errorMessageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+
+    sendMessageButton.addEventListener("click", sendMessage);
+
+    userInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") sendMessage();
+    });
+</script>
 </html>

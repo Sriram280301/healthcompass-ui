@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthBot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #f4f4f9;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .message.bot {
+            background-color: #007bff;
+            color: white;
+            text-align: left;
+        }
+
+        .message.user {
+            background-color: #d4f3e9;
+            color: #333;
+            text-align: right;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        .chat-input button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 10px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .chat-input button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="chatContainer" class="chat-container">
+        <div class="chat-header">
+            <h3><i class="fas fa-robot"></i> HealthBot</h3>
+            <button id="closeChat" class="close-button"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="chatMessages" class="chat-messages">
+            <div class="message bot">
+                Hello! I'm your healthcare assistant. How can I help you today?
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Type your message here...">
+            <button id="sendMessage"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    // DOM Elements
+    const chatMessages = document.getElementById("chatMessages");
+    const userInput = document.getElementById("userInput");
+    const sendMessage = document.getElementById("sendMessage");
+
+    // Utility Function: Sanitize Input
+    function sanitizeInput(input) {
+        const div = document.createElement("div");
+        div.textContent = input;
+        return div.innerHTML;
+    }
+
+    // Utility Function: Add Message to Chat
+    function addMessage(content, sender = "user") {
+        const sanitizedContent = sanitizeInput(content);
+        const message = document.createElement("div");
+        message.classList.add("message", sender);
+        message.textContent = sanitizedContent;
+        chatMessages.appendChild(message);
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+    }
+
+    // Function: Handle Chatbot Interaction
+    async function fetchResponse(message) {
+        try {
+            // API Call
+            const response = await axios.post("http://192.168.182.125:5000/get", { message });
+            const botResponse = response.data?.response;
+
+            if (botResponse) {
+                addMessage(botResponse, "bot");
+            } else {
+                addMessage("Sorry, I couldn't understand the response from the server.", "bot");
+            }
+        } catch (error) {
+            // Enhanced Error Handling
+            if (error.response) {
+                // Server returned an error response
+                addMessage(`Server Error: ${error.response.status} - ${error.response.statusText}`, "bot");
+            } else if (error.request) {
+                // No response from the server
+                addMessage("Network Error: Unable to reach the server. Please check your connection.", "bot");
+            } else {
+                // Other errors
+                addMessage("An unexpected error occurred. Please try again later.", "bot");
+            }
+        }
+    }
+
+    // Event Listener: Send Button
+    sendMessage.addEventListener("click", () => {
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        addMessage(message, "user");
+        userInput.value = ""; // Clear input
+        fetchResponse(message);
+    });
+
+    // Event Listener: Enter Key
+    userInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            sendMessage.click();
+        }
+    });
+</script>
+
+</body>
+</html>
